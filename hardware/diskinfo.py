@@ -15,6 +15,7 @@
 import os
 import re
 import sys
+import stat
 
 from hardware import detect_utils
 from hardware import smart_utils
@@ -33,7 +34,14 @@ def disknames():
     names = []
     for name in os.listdir('/sys/block'):
         if (name[1] == 'd' and name[0] in 'shv') or name.startswith('nvme'):
-            names.append(name)
+            try:
+               if not stat.S_ISBLK(os.stat("/dev/%s" % name).st_mode):
+                  sys.stderr.write("Skipping disk %s because it is not a block device" % name)
+                  continue
+               names.append(name)
+            except FileNotFoundError:
+               sys.stderr.write("Skipping disk %s because it does not exist\n" % name)
+               continue
     return names
 
 

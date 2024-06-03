@@ -82,7 +82,7 @@ def run_sysbench_memory_threaded(hw_lst, max_time, block_size, cpu_count,
                          % (block_size, max_time, cpu_count))
 
     _cmd = ('%s sysbench --max-time=%d --max-requests=100000000 '
-            '--num-threads=%d --memory-block-size=%s memory run')
+            '--num-threads=%d --test=memory --memory-block-size=%s run')
     sysbench_cmd = subprocess.Popen(_cmd % (taskset, max_time,
                                             cpu_count, block_size),
                                     shell=True, stdout=subprocess.PIPE)

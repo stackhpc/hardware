@@ -58,6 +58,9 @@ def get_disk_info(name, sizes, hw_lst):
         # for nvme devices we can have a nested device dir
         if not os.path.exists(disk_sys_info):
             disk_sys_info = '/sys/block/%s/device/%s' % (name, info)
+        # for nvme devices with a multipath component
+        if not os.path.exists(disk_sys_info):
+            disk_sys_info = '/sys/block/%s/device/%s/%s' % (name, name.rsplit('n', 1)[0], info)
         try:
             with open(disk_sys_info, 'r') as dev:
                 hw_lst.append(('disk', name, info.split('/')[1],

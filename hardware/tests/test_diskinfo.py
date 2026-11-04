@@ -65,6 +65,31 @@ class TestDiskinfo(unittest.TestCase):
                               ('disk', 'fake', 'nr_requests', '1023'),
                               ('disk', 'fake', 'scheduler', 'none')])
 
+    @mock.patch('{}.open'.format(builtin_module_name), create=True)
+    @mock.patch('os.path.exists')
+    def test_get_disk_info_nvme_multipath(self, mock_exists, mock_open):
+        name = 'nvme0n1'
+        standard_path = '/sys/block/%s/device/vendor' % name
+        nested_path = '/sys/block/%s/device/device/vendor' % name
+        multipath_path = (
+            '/sys/block/%s/device/nvme0/device/vendor' % name)
+        missing_paths = {standard_path, nested_path}
+        mock_exists.side_effect = lambda path: path not in missing_paths
+
+        def open_path(path, *args, **kwargs):
+            data = 'Fake Vendor\n' if path == multipath_path else ''
+            return mock.mock_open(read_data=data).return_value
+
+        mock_open.side_effect = open_path
+
+        hw = []
+        diskinfo.get_disk_info(name, {name: 100}, hw)
+
+        self.assertIn(('disk', name, 'vendor', 'Fake Vendor'), hw)
+        mock_open.assert_any_call(multipath_path, 'r')
+
+
+
 
 if __name__ == "__main__":
     unittest.main()

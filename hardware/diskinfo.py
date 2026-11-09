@@ -14,8 +14,8 @@
 
 import os
 import re
-import sys
 import stat
+import sys
 
 from hardware import detect_utils
 from hardware import smart_utils
@@ -35,13 +35,16 @@ def disknames():
     for name in os.listdir('/sys/block'):
         if (name[1] == 'd' and name[0] in 'shv') or name.startswith('nvme'):
             try:
-               if not stat.S_ISBLK(os.stat("/dev/%s" % name).st_mode):
-                  sys.stderr.write("Skipping disk %s because it is not a block device" % name)
-                  continue
-               names.append(name)
+                if not stat.S_ISBLK(os.stat("/dev/%s" % name).st_mode):
+                    sys.stderr.write(
+                        "Skipping disk %s because it is not a block device" %
+                        name)
+                    continue
+                names.append(name)
             except FileNotFoundError:
-               sys.stderr.write("Skipping disk %s because it does not exist\n" % name)
-               continue
+                sys.stderr.write("Skipping disk %s because it does not exist\n"
+                                 % name)
+                continue
     return names
 
 
@@ -58,6 +61,10 @@ def get_disk_info(name, sizes, hw_lst):
         # for nvme devices we can have a nested device dir
         if not os.path.exists(disk_sys_info):
             disk_sys_info = '/sys/block/%s/device/%s' % (name, info)
+        # for nvme devices with a multipath component
+        if not os.path.exists(disk_sys_info):
+            disk_sys_info = '/sys/block/%s/device/%s/%s' % (
+                name, name.rsplit('n', 1)[0], info)
         try:
             with open(disk_sys_info, 'r') as dev:
                 hw_lst.append(('disk', name, info.split('/')[1],

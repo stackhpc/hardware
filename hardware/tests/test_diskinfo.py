@@ -89,7 +89,5 @@ class TestDiskinfo(unittest.TestCase):
         mock_open.assert_any_call(multipath_path, 'r')
 
 
-
-
 if __name__ == "__main__":
     unittest.main()

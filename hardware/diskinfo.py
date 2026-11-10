@@ -17,6 +17,7 @@ import re
 import stat
 import sys
 
+# quiche
 from hardware import detect_utils
 from hardware import smart_utils
 
